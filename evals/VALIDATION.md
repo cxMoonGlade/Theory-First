@@ -1,6 +1,6 @@
 # Validation record — 2026-07-15
 
-This record describes the local pre-release candidate. It is evidence about packaging and workflow contracts, not proof that scientific conclusions produced with the plugin are correct.
+This record describes the published `v0.1.0` source. It is evidence about packaging and workflow contracts, not proof that scientific conclusions produced with the plugin are correct.
 
 ## Repository contracts
 
@@ -31,11 +31,15 @@ With `pypdf` available, bounded extraction completed for 15 pages and produced 4
 
 See [FORWARD_TEST_REPORT.md](FORWARD_TEST_REPORT.md). The current minimum routing corpus is [cases.json](cases.json), with parent/child boundary cases in [collisions.json](collisions.json). These are qualitative pre-release checks, not a statistical routing benchmark.
 
-## Release-time checks still pending at this snapshot
+## Published-source checks
 
-- The public GitHub repository exists, but this candidate commit had not yet been pushed when this local record was written.
-- GitHub Actions have not run on a remote commit.
-- Git-based marketplace installation and ChatGPT desktop-app installation remain release-time checks.
-- GitHub private vulnerability reporting must be enabled after repository creation and before inviting external users.
+- The reviewed source was pushed to the public `cxMoonGlade/Theory-First` repository, and the README, manifest, privacy-policy, and repository URLs resolved from `main`.
+- GitHub Actions passed the 44-test repository gate on Python 3.10, 3.11, and 3.12.
+- A fresh isolated `CODEX_HOME` added `cxMoonGlade/Theory-First` as a Git marketplace, installed `theory-first@theory-first` at version `0.1.0`, and reported it enabled.
+- The repository description and discovery topics were set, and GitHub private vulnerability reporting was enabled.
 
-Complete [the release checklist](../RELEASE_CHECKLIST.md) before announcing a public release.
+## Remaining environment-specific check
+
+- Installation through the ChatGPT desktop-app interface was not exercised in this environment. This does not affect the verified Git-based Codex installation path, but it remains an explicit unverified surface.
+
+Use [the release checklist](../RELEASE_CHECKLIST.md) again for every future tag.
