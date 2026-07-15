@@ -19,7 +19,9 @@ the suite are correct.
 - Installer regression coverage includes native user/project path mapping,
   dangling and external symlinks, non-overwriting conflict behavior, staged
   multi-target rollback, `KeyboardInterrupt` recovery, post-commit cleanup
-  reporting, external-write preservation, and commit-time races.
+  reporting, cooperative-lock serialization, detected identity or manifest
+  changes, and a regular-file race as defense in depth. It does not claim
+  atomic protection against writers that ignore the cooperative lock.
   CI also exercises the filesystem transaction tests on Linux, macOS, and
   Windows.
 

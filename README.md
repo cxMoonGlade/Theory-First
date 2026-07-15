@@ -110,6 +110,11 @@ and rolled back together on ordinary errors or interrupts before all target
 swaps commit. If post-commit cleanup is interrupted, the new suite remains
 active and the error reports any leftover transaction directories for manual
 inspection. Abrupt process or machine termination is outside these guarantees.
+The cooperative lock serializes Theory First installers that honor it. Do not
+run another skill manager or out-of-band process against the same seven skill
+names or `.theory-first-*` transaction directories while installation is
+active. Observed identity or content changes are preserved and reported, but
+the installer does not claim atomic protection against non-cooperating writers.
 Use `theory-first list`,
 `theory-first path`, or `theory-first install --target /path/to/skills` for
 inspection and other Agent Skills hosts.

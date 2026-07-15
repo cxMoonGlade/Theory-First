@@ -142,9 +142,9 @@ def _rollback(prepared: _PreparedInstall) -> list[str]:
         staged_path = prepared.staging / skill_name
         final_path = prepared.target / skill_name
         try:
-            # The attempt is recorded before os.replace. A missing staged path
-            # proves that the rename completed even if Python was interrupted
-            # before the call returned to our bytecode.
+            # The attempt is recorded before the staged rename. A missing
+            # staged path proves that the rename completed even if Python was
+            # interrupted before the call returned to our bytecode.
             if not _exists(staged_path) and _exists(final_path):
                 if _is_linklike(final_path):
                     errors.append(
@@ -173,14 +173,15 @@ def _rollback(prepared: _PreparedInstall) -> list[str]:
         backup_path = prepared.backup / skill_name
         final_path = prepared.target / skill_name
         try:
-            # As above, an attempted backup move only changed state when its
-            # destination exists. Never disturb a final path otherwise.
+            # An attempted backup move only changed state when its destination
+            # exists. The precheck and os.rename are defense in depth; callers
+            # must not run out-of-band writers against these names mid-transaction.
             if not _exists(backup_path):
                 continue
             if _exists(final_path):
                 errors.append(f"restore blocked by existing path: {final_path}")
             else:
-                os.replace(backup_path, final_path)
+                os.rename(backup_path, final_path)
         except BaseException as error:
             errors.append(f"restore {final_path}: {error}")
 
@@ -400,11 +401,10 @@ def _perform_install(
                         manifest=source_manifests[skill_name],
                     )
                 )
-                # `os.replace` may overwrite a path created after our final
-                # conflict check on Windows. `os.rename` refuses that existing
-                # destination there; on POSIX, a staged directory cannot replace
-                # a concurrently created regular file. This preserves the
-                # external writer used by the commit-race regression test.
+                # `os.rename` preserves the regular-file race exercised by the
+                # regression test and is defense in depth inside the cooperative
+                # installer contract. It is not universal protection from
+                # out-of-band writers on every platform and filesystem.
                 os.rename(staged_path, final_path)
     except BaseException as error:
         rollback_errors: list[str] = []

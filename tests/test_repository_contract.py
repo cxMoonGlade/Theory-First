@@ -279,6 +279,11 @@ def test_readmes_are_separate_reciprocal_language_pages() -> None:
     assert "## 工作流程" in chinese
     assert "## 工作流程" not in english
     assert "## Workflow" not in chinese
+    assert (
+        "does not claim atomic protection against non-cooperating writers"
+        in english
+    )
+    assert "不声称能对不遵守该锁的 writer 提供原子保护" in chinese
 
     han = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff]")
     assert not han.search(english.replace("简体中文", "", 1))

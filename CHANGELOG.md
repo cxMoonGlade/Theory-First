@@ -14,8 +14,9 @@ All notable changes to Theory First are recorded here.
 - Added a source-audited smart-traffic worked example comparing Theory First
   with an isolated ordinary deep-research arm on illusion and drift resistance.
 - Added closed-world wheel/sdist verification, RECORD integrity checks, and
-  transaction tests covering interrupts, concurrent writes, and multi-target
-  rollback across Linux, macOS, and Windows CI.
+  transaction tests covering interrupts, cooperating-installer serialization,
+  selected detected external modifications, and multi-target rollback across
+  Linux, macOS, and Windows CI.
 
 ## 0.2.0 — 2026-07-15
 

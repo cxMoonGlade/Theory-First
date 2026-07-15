@@ -348,7 +348,7 @@ def test_interrupt_immediately_after_a_successful_rename_restores_the_old_skill(
             destination_path == target / "theory-first"
             and source_path.parent.name.startswith(".theory-first-stage-")
         )
-        operation = real_rename if is_install else real_replace
+        operation = real_replace if is_backup else real_rename
         if (interrupt_phase == "backup" and is_backup) or (
             interrupt_phase == "install" and is_install
         ):
@@ -429,11 +429,10 @@ def test_incomplete_rollback_preserves_backup_and_recovery_message(
 ) -> None:
     target = tmp_path / "skills"
     _seed_stale_skill(target, "precious")
-    real_replace = os.replace
     real_rename = os.rename
     real_unlink = Path.unlink
 
-    def fail_install(
+    def fail_install_and_restore(
         source: str | os.PathLike[str], destination: str | os.PathLike[str]
     ) -> None:
         source_path = Path(source)
@@ -443,27 +442,21 @@ def test_incomplete_rollback_preserves_backup_and_recovery_message(
             and source_path.parent.name.startswith(".theory-first-stage-")
         ):
             raise OSError("injected install failure")
-        real_rename(source, destination)
-
-    def fail_restore(
-        source: str | os.PathLike[str], destination: str | os.PathLike[str]
-    ) -> None:
-        source_path = Path(source)
-        destination_path = Path(destination)
         if (
             source_path.parent.name.startswith(".theory-first-backup-")
             and destination_path == target / "theory-first"
         ):
             raise OSError("injected restore failure")
-        real_replace(source, destination)
+        real_rename(source, destination)
 
     def fail_lock_cleanup(self: Path, *args: object, **kwargs: object) -> None:
         if self.name.startswith(".theory-first-") and self.suffix == ".lock":
             raise PermissionError("injected lock cleanup failure")
         real_unlink(self, *args, **kwargs)
 
-    monkeypatch.setattr(installer_module.os, "rename", fail_install)
-    monkeypatch.setattr(installer_module.os, "replace", fail_restore)
+    monkeypatch.setattr(
+        installer_module.os, "rename", fail_install_and_restore
+    )
     monkeypatch.setattr(Path, "unlink", fail_lock_cleanup)
 
     with pytest.raises(InstallError, match="rollback was incomplete") as caught:
@@ -479,7 +472,7 @@ def test_incomplete_rollback_preserves_backup_and_recovery_message(
         assert "lock cleanup also failed" in "\n".join(caught.value.__notes__)
 
 
-def test_commit_time_race_does_not_overwrite_the_new_path(
+def test_regular_file_race_is_preserved_as_defense_in_depth(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     target = tmp_path / "skills"
