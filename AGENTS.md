@@ -1,11 +1,15 @@
 # Repository guide
 
-This is a public, domain-neutral Codex plugin for computational-science claim governance.
+This is a public, domain-neutral, cross-platform Agent Skills suite for computational-science claim governance.
 
 ## Source of truth
 
 - `README.md` defines the product boundary and public workflow.
-- `plugins/theory-first/.codex-plugin/plugin.json` defines plugin metadata.
+- `plugins/theory-first/skills/` is the single runtime source for every host.
+- `plugins/theory-first/.codex-plugin/plugin.json` and
+  `plugins/theory-first/.claude-plugin/plugin.json` are thin host adapters.
+- `.agents/plugins/marketplace.json` and `.claude-plugin/marketplace.json`
+  define the native Codex and Claude Code marketplaces.
 - `plugins/theory-first/skills/*/SKILL.md` defines runtime behavior.
 - `profiles/` contains optional adapters; project-specific paths and commands belong there, not in the core skills.
 - `evals/cases.json` defines the minimum routing contract.
@@ -19,6 +23,9 @@ This is a public, domain-neutral Codex plugin for computational-science claim go
 - Keep preregistration before claim-bearing code and result inspection.
 - Add field-specific behavior through a project profile unless it is genuinely universal.
 - Preserve the distinction between source claims, durable project facts, and project inferences.
+- Preserve the complete seven-skill install unit. Dependency-bearing skills
+  must fail with `SUITE_INCOMPLETE` when a named child is unavailable; never
+  disguise a partial install as a completed scientific workflow.
 
 ## Validate
 
@@ -27,4 +34,8 @@ python -m pip install -e '.[dev]'
 pytest
 ```
 
-Also run the current Codex skill and plugin validators when they are available in the development environment. Update routing cases whenever a skill's trigger boundary changes.
+Also run the current Agent Skills, Codex, and Claude Code validators when they
+are available. Run `python scripts/sync_portable_resources.py --check` so every
+portable orchestrator directory retains the canonical status model. Test an
+isolated `npx skills` install with `--skill '*'` whenever installation behavior
+changes. Update routing cases whenever a skill's trigger boundary changes.

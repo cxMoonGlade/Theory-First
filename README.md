@@ -2,13 +2,15 @@
 
 > Close the literature. Preregister the claim. Try to falsify the result.
 
-Theory First is a pre-release Codex plugin containing agent skills for rigorous
-computational science. It turns a scientific claim into an auditable sequence:
-map the surrounding field, close the load-bearing evidence, preregister what
-would count as success or failure, and attack a result before allowing it to
-propagate.
+Theory First is a cross-platform Agent Skills suite for rigorous computational
+science, with native marketplace packaging for Codex and Claude Code. Its core
+skills also install into OpenCode and other Agent Skills clients without
+forking the workflow. The suite turns a scientific claim into an auditable
+sequence: map the surrounding field, close the load-bearing evidence,
+preregister what would count as success or failure, and attack a result before
+allowing it to propagate.
 
-The plugin is intentionally stricter than a paper summarizer. Its public core is
+The suite is intentionally stricter than a paper summarizer. Its public core is
 domain-neutral; project-specific repositories, metrics, retrievers, provenance
 rules, and artifact locations belong in an optional project profile.
 
@@ -29,8 +31,8 @@ result under review
 
 The two entry points are:
 
-- `$theory-first` — use before claim-bearing experiment or implementation work.
-- `$theory-fix` — use when a result is surprising, unusually clean, relied on by
+- `theory-first` — use before claim-bearing experiment or implementation work.
+- `theory-fix` — use when a result is surprising, unusually clean, relied on by
   a downstream claim, or otherwise needs adversarial review.
 
 Shared skills handle landscape mapping, literature closure, equation-level
@@ -57,29 +59,90 @@ gap.
 
 ## Install
 
-This repository is laid out as a Codex marketplace containing one plugin. Add
-its marketplace source with:
+The seven directories under `plugins/theory-first/skills/` are the single
+runtime source for every supported host. Choose one installation surface; do
+not install duplicate copies of the same skill into several discovery paths for
+one client.
+
+Install all seven skills as one suite. The orchestrators delegate to named
+children, and Agent Skills frontmatter has no portable cross-host dependency
+declaration; therefore `--skill theory-first`, `--skill theory-fix`, and
+`--skill close-literature` are not supported standalone installs. A
+dependency-bearing skill that cannot discover a child stops with
+`SUITE_INCOMPLETE` instead of silently replacing that workflow. The native
+Codex and Claude plugins already install the complete suite; the portable
+commands below deliberately use `--skill '*'`.
+
+### OpenCode and other Agent Skills clients
+
+The cross-platform [`skills`](https://github.com/vercel-labs/skills) CLI can
+discover all seven skills directly from this repository. For OpenCode:
+
+```bash
+npx skills add cxMoonGlade/Theory-First --skill '*' --agent opencode --global --yes
+```
+
+To provision several supported coding agents from one canonical installation:
+
+```bash
+npx skills add cxMoonGlade/Theory-First --skill '*' --agent claude-code --agent opencode --agent codex --global --yes
+```
+
+Use `--copy` on hosts where symlinks are unavailable. For a reproducible install,
+pin both the installer and this repository's skill directory:
+
+```bash
+npx skills@1.5.17 add https://github.com/cxMoonGlade/Theory-First/tree/v0.2.0/plugins/theory-first/skills --skill '*' --agent opencode --global --copy --yes
+```
+
+OpenCode loads skills through its native `skill` tool. A portable explicit
+request is:
+
+```text
+Load and follow the theory-first skill before writing claim-bearing code.
+```
+
+### Codex
+
+Add the native Codex marketplace and install its plugin:
 
 ```bash
 codex plugin marketplace add cxMoonGlade/Theory-First
 codex plugin add theory-first@theory-first
 ```
 
-For a local checkout, pass the marketplace root directory instead:
+For a local checkout, pass the repository root instead:
 
 ```bash
 codex plugin marketplace add /absolute/path/to/theory-first
 codex plugin add theory-first@theory-first
 ```
 
-The first command registers the marketplace; the second installs its plugin.
-You can also inspect or install it from the plugin directory in the ChatGPT
-desktop app. Start a new task after installation and invoke an entry-point skill
-explicitly, for example:
+Start a new task after installation and invoke an entry point explicitly, for
+example:
 
 ```text
 Use $theory-first to ground this experiment before we write claim-bearing code.
 ```
+
+### Claude Code
+
+Add the native Claude marketplace and install the same plugin core:
+
+```bash
+claude plugin marketplace add cxMoonGlade/Theory-First
+claude plugin install theory-first@theory-first
+```
+
+Claude Code namespaces marketplace skills. Its explicit entry points are:
+
+```text
+/theory-first:theory-first
+/theory-first:theory-fix
+```
+
+For a local checkout, replace the marketplace source with the repository root.
+Run `claude plugin validate . --strict` before distributing a modified checkout.
 
 The bounded paper downloader uses only Python's standard library. Local PDF text
 extraction is optional and requires the BSD-licensed `pypdf` package in the
@@ -89,7 +152,7 @@ Python environment that runs the skill:
 python -m pip install 'pypdf>=6,<7'
 ```
 
-The plugin is pre-release. Pin a tested Git ref when reproducibility matters.
+The suite is pre-stable. Pin a tested Git ref when reproducibility matters.
 
 ## Project profiles and artifacts
 
@@ -115,7 +178,7 @@ exact source locator.
 
 ## Privacy and security
 
-The plugin code in this repository contains no telemetry or analytics endpoint.
+The bundled code in this repository contains no telemetry or analytics endpoint.
 Invoking landscape mapping or literature closure may send minimized search
 queries and source identifiers to the search providers, scholarly indexes, or
 source hosts configured in the user's environment, subject to host permissions.

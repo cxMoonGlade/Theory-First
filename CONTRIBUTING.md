@@ -16,9 +16,12 @@ retrieval system, or compute environment.
 
    ```bash
    python -m pip install -e '.[dev]'
+   python scripts/sync_portable_resources.py --check
    pytest
    ```
-5. Review the diff for private artifacts and third-party content.
+5. Run the available Agent Skills, Codex, and Claude Code validators when a
+   change touches skills or platform manifests.
+6. Review the diff for private artifacts and third-party content.
 
 ## Core design constraints
 
@@ -34,6 +37,11 @@ retrieval system, or compute environment.
   source locator and a reading record.
 - Keep outputs inspectable by a human. Avoid hidden scoring rules that turn
   incomplete evidence into a pass.
+- Keep `plugins/theory-first/skills/` as the single runtime source. Platform
+  adapters may add manifests and UI metadata but must not fork skill behavior.
+- Keep all dependency-bearing skills honest about the full-suite contract.
+  Missing child skills must yield `SUITE_INCOMPLETE`, not an improvised child
+  workflow or a scientific status.
 
 ## Content and privacy rules
 

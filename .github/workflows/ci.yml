@@ -22,5 +22,26 @@ jobs:
           cache: pip
       - name: Install validation dependencies
         run: python -m pip install --upgrade pip && python -m pip install -e '.[dev]'
+      - name: Verify portable resources
+        run: python scripts/sync_portable_resources.py --check
       - name: Validate repository contracts
         run: pytest
+
+  portable-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - name: Install and inspect the complete Agent Skills suite
+        shell: bash
+        run: |
+          export HOME="$RUNNER_TEMP/theory-first-home"
+          export XDG_CONFIG_HOME="$RUNNER_TEMP/theory-first-config"
+          export npm_config_cache="$RUNNER_TEMP/npm-cache"
+          mkdir -p "$HOME" "$XDG_CONFIG_HOME"
+          npx --yes skills@1.5.17 add ./plugins/theory-first/skills --skill '*' --agent opencode --global --copy --yes
+          for skill in close-literature deep-read-paper map-research-landscape preregister-claim stress-test-claim theory-first theory-fix; do
+            test -f "$HOME/.agents/skills/$skill/SKILL.md"
+          done
+          test "$(find "$HOME/.agents/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 7
+          cmp plugins/theory-first/STATUS_MODEL.md "$HOME/.agents/skills/theory-first/references/status-model.md"
+          cmp plugins/theory-first/STATUS_MODEL.md "$HOME/.agents/skills/theory-fix/references/status-model.md"

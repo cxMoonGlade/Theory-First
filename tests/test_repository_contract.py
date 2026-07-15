@@ -10,6 +10,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / "plugins" / "theory-first"
 SKILLS = PLUGIN / "skills"
+VERSION = "0.2.0"
 EXPECTED_SKILLS = {
     "theory-first",
     "theory-fix",
@@ -18,6 +19,20 @@ EXPECTED_SKILLS = {
     "preregister-claim",
     "stress-test-claim",
     "map-research-landscape",
+}
+REQUIRED_CHILDREN = {
+    "theory-first": {
+        "map-research-landscape",
+        "close-literature",
+        "deep-read-paper",
+        "preregister-claim",
+    },
+    "theory-fix": {
+        "close-literature",
+        "deep-read-paper",
+        "stress-test-claim",
+    },
+    "close-literature": {"deep-read-paper"},
 }
 
 
@@ -53,6 +68,49 @@ def test_skill_resource_links_resolve() -> None:
             )
 
 
+def test_skill_markdown_links_stay_inside_the_portable_skill() -> None:
+    markdown_link = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+    for skill_name in EXPECTED_SKILLS:
+        skill_dir = SKILLS / skill_name
+        text = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        for target in markdown_link.findall(text):
+            if target.startswith(("https://", "http://", "mailto:", "#")):
+                continue
+            relative = target.split("#", 1)[0]
+            resolved = (skill_dir / relative).resolve()
+            assert resolved.is_relative_to(skill_dir.resolve()), (
+                f"portable skill link escapes {skill_name}: {target}"
+            )
+            assert resolved.is_file(), f"broken link in {skill_name}: {target}"
+
+
+def test_portable_status_models_match_the_canonical_table() -> None:
+    canonical = (PLUGIN / "STATUS_MODEL.md").read_bytes()
+    for skill_name in {"theory-first", "theory-fix"}:
+        portable = SKILLS / skill_name / "references" / "status-model.md"
+        assert portable.read_bytes() == canonical
+
+
+def test_dependency_bearing_skills_require_the_complete_suite() -> None:
+    status_model = (PLUGIN / "STATUS_MODEL.md").read_text(encoding="utf-8")
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "SUITE_INCOMPLETE" in status_model
+    assert "not supported standalone installs" in readme
+    portable_install_commands = [
+        line for line in readme.splitlines() if line.startswith("npx skills")
+    ]
+    assert portable_install_commands
+    assert all("--skill '*'" in line for line in portable_install_commands)
+
+    for parent, children in REQUIRED_CHILDREN.items():
+        text = (SKILLS / parent / "SKILL.md").read_text(encoding="utf-8")
+        assert "SUITE_INCOMPLETE" in text
+        assert re.search(r"complete seven-skill Theory\s+First suite", text)
+        for child in children:
+            assert child in EXPECTED_SKILLS
+            assert f"`{child}`" in text
+
+
 def test_skill_ui_metadata_matches_directory() -> None:
     for skill_name in EXPECTED_SKILLS:
         metadata = yaml.safe_load(
@@ -86,30 +144,83 @@ def test_public_skills_contain_no_private_project_residue() -> None:
 
 
 def test_plugin_and_marketplace_manifests() -> None:
-    plugin = json.loads(
+    codex_plugin = json.loads(
         (PLUGIN / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8")
     )
-    marketplace = json.loads(
+    claude_plugin = json.loads(
+        (PLUGIN / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8")
+    )
+    codex_marketplace = json.loads(
         (ROOT / ".agents" / "plugins" / "marketplace.json").read_text(
             encoding="utf-8"
         )
     )
-
-    assert plugin["name"] == "theory-first"
-    assert plugin["version"] == "0.1.0"
-    assert plugin["skills"] == "./skills/"
-    assert len(plugin["interface"]["defaultPrompt"]) <= 3
-    assert all(
-        len(prompt) <= 128 for prompt in plugin["interface"]["defaultPrompt"]
+    claude_marketplace = json.loads(
+        (ROOT / ".claude-plugin" / "marketplace.json").read_text(
+            encoding="utf-8"
+        )
     )
 
-    entry = marketplace["plugins"][0]
-    assert entry["name"] == plugin["name"]
-    assert entry["source"] == {
+    common_fields = {
+        "name",
+        "version",
+        "description",
+        "author",
+        "homepage",
+        "repository",
+        "license",
+        "keywords",
+        "skills",
+    }
+    assert {field: codex_plugin[field] for field in common_fields} == {
+        field: claude_plugin[field] for field in common_fields
+    }
+    assert codex_plugin["name"] == "theory-first"
+    assert codex_plugin["version"] == VERSION
+    assert codex_plugin["skills"] == "./skills/"
+    assert claude_plugin["displayName"] == "Theory First"
+    assert len(codex_plugin["interface"]["defaultPrompt"]) <= 3
+    assert all(
+        len(prompt) <= 128
+        for prompt in codex_plugin["interface"]["defaultPrompt"]
+    )
+
+    codex_entry = codex_marketplace["plugins"][0]
+    assert codex_entry["name"] == codex_plugin["name"]
+    assert codex_entry["source"] == {
         "source": "local",
         "path": "./plugins/theory-first",
     }
-    assert (ROOT / entry["source"]["path"]).resolve() == PLUGIN.resolve()
+    assert (ROOT / codex_entry["source"]["path"]).resolve() == PLUGIN.resolve()
+
+    assert claude_marketplace["name"] == "theory-first"
+    assert claude_marketplace["owner"]["name"] == "cxMoonGlade"
+    claude_entry = claude_marketplace["plugins"][0]
+    assert claude_entry == {
+        "name": claude_plugin["name"],
+        "source": "./plugins/theory-first",
+    }
+    assert (ROOT / claude_entry["source"]).resolve() == PLUGIN.resolve()
+
+
+def test_release_version_is_synchronized() -> None:
+    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert f'version = "{VERSION}"' in pyproject
+    assert f"## {VERSION} " in changelog
+    assert f"/tree/v{VERSION}/plugins/theory-first/skills" in readme
+
+
+def test_public_installation_surfaces_are_documented() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    required = {
+        "codex plugin marketplace add cxMoonGlade/Theory-First",
+        "claude plugin marketplace add cxMoonGlade/Theory-First",
+        "--agent opencode",
+        "Agent Skills",
+    }
+    assert all(item in readme for item in required)
 
 
 def test_project_profile_uses_declarative_safe_argv() -> None:
@@ -237,6 +348,7 @@ def test_status_model_covers_every_child_and_parent_outcome() -> None:
         "REPAIR",
         "STOP",
         "ACCEPT_WITH_CLASS",
+        "SUITE_INCOMPLETE",
     }
     assert required.issubset(set(re.findall(r"[A-Z][A-Z_-]+", status_model)))
     assert "scientific-workflow clearance only" in status_model

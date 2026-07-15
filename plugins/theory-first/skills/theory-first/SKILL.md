@@ -7,7 +7,17 @@ description: Literature-ground and preregister a computational-science claim bef
 
 Turn an intended scientific claim into an evidence-closed, falsifiable contract before its result can influence the design. This skill governs claim-bearing work; it is not a general literature summary or a substitute for domain judgment.
 
-Read the plugin's canonical [status model](../../STATUS_MODEL.md) before issuing a gate.
+Read the bundled [status model](references/status-model.md) before issuing a gate.
+Load every named child through the host's native skill mechanism. Treat child
+names as skill identifiers, never shell commands, and do not replace an
+available child with an improvised prose summary.
+
+Before freezing the charter, resolve `map-research-landscape`,
+`close-literature`, `deep-read-paper`, and `preregister-claim` through native
+skill discovery. If any is unavailable, return `SUITE_INCOMPLETE`, list the
+missing names, instruct the user to install the complete seven-skill Theory
+First suite, and stop. Do not issue `CODE_BLOCKED` or `CODE_PERMITTED`: the
+scientific workflow has not started.
 
 ## Non-negotiable boundary
 

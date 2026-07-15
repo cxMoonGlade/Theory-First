@@ -1,0 +1,13 @@
+{
+  "name": "theory-first",
+  "owner": {
+    "name": "cxMoonGlade"
+  },
+  "description": "Evidence gates for rigorous computational science.",
+  "plugins": [
+    {
+      "name": "theory-first",
+      "source": "./plugins/theory-first"
+    }
+  ]
+}

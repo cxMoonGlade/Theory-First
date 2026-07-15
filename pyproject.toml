@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "theory-first-plugin"
-version = "0.1.0"
-description = "Validation harness for the Theory First Codex plugin"
+version = "0.2.0"
+description = "Validation harness for the cross-platform Theory First agent skills"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

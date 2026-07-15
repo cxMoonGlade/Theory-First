@@ -1,0 +1,26 @@
+{
+  "name": "theory-first",
+  "displayName": "Theory First",
+  "version": "0.2.0",
+  "description": "Evidence closure, preregistration, and adversarial claim testing for computational science.",
+  "author": {
+    "name": "cxMoonGlade",
+    "url": "https://github.com/cxMoonGlade"
+  },
+  "homepage": "https://github.com/cxMoonGlade/Theory-First",
+  "repository": "https://github.com/cxMoonGlade/Theory-First",
+  "license": "MIT",
+  "keywords": [
+    "agent-skills",
+    "claude-code",
+    "codex",
+    "opencode",
+    "research",
+    "scientific-method",
+    "literature-review",
+    "preregistration",
+    "falsification",
+    "reproducibility"
+  ],
+  "skills": "./skills/"
+}

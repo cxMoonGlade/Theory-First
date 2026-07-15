@@ -28,6 +28,20 @@ before narrowing” stage. That upstream repository is published under the
 Theory First ships an independently written `map-research-landscape` workflow;
 it does not redistribute the upstream skill or its code.
 
+## Interoperability
+
+The skill directories follow the open
+[Agent Skills specification](https://agentskills.io/specification). Its
+reference implementation is published by the
+[Agent Skills project](https://github.com/agentskills/agentskills) under
+Apache-2.0; its documentation states CC-BY-4.0 terms. Theory First does not
+copy the specification text or reference implementation.
+
+The optional cross-platform installation commands use Vercel Labs'
+[`skills` CLI](https://github.com/vercel-labs/skills). It is fetched and run
+separately by the user and is not vendored or imported by this repository;
+its upstream repository and package terms apply.
+
 ## Runtime dependency
 
 The optional bounded-text extractor uses

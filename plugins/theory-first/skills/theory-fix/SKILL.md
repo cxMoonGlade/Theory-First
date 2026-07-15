@@ -7,7 +7,16 @@ description: Reopen the evidence and try to falsify a computational-science resu
 
 Interrupt result momentum. Freeze what was observed, reopen its evidentiary bridge, and attempt to break the interpretation before it propagates downstream.
 
-Read the plugin's canonical [status model](../../STATUS_MODEL.md) before mapping child statuses to a top-level outcome.
+Read the bundled [status model](references/status-model.md) before mapping child statuses to a top-level outcome.
+Load every named child through the host's native skill mechanism. Treat child
+names as skill identifiers, never shell commands, and do not replace an
+available child with an improvised prose summary.
+
+Before freezing the propagation unit, resolve `close-literature`,
+`deep-read-paper`, and `stress-test-claim` through native skill discovery. If
+any is unavailable, return `SUITE_INCOMPLETE`, list the missing names, instruct
+the user to install the complete seven-skill Theory First suite, and stop. Do
+not issue a scientific outcome: the audit has not started.
 
 This skill audits a claim; it does not silently edit the implementation, rerun until the result looks acceptable, or rewrite the claim after seeing objections. Any repair becomes a new version with a new test.
 

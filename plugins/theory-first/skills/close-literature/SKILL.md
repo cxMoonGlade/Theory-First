@@ -7,6 +7,15 @@ description: Close every load-bearing evidence gap for a frozen computational-sc
 
 Build the smallest defensible evidence set for one frozen claim. Search is broad enough to find contrary formulations, but close reading is reserved for sources that carry a specific row in the claim.
 
+Load `deep-read-paper` through the host's native skill mechanism. Treat its
+name as a skill identifier, never a shell command, and do not replace the child
+with an improvised prose summary.
+
+Resolve `deep-read-paper` through native skill discovery before building the
+coverage matrix. If it is unavailable, return `SUITE_INCOMPLETE`, name the
+missing child, instruct the user to install the complete seven-skill Theory
+First suite, and stop. This is an installation failure, not a literature gap.
+
 ## Inputs
 
 Require:
