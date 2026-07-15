@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -45,3 +45,82 @@ jobs:
           test "$(find "$HOME/.agents/skills" -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 7
           cmp plugins/theory-first/STATUS_MODEL.md "$HOME/.agents/skills/theory-first/references/status-model.md"
           cmp plugins/theory-first/STATUS_MODEL.md "$HOME/.agents/skills/theory-fix/references/status-model.md"
+
+  python-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Build and inspect the Python distribution
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install '.[release]'
+          python -m build
+          python -m twine check dist/*
+          python scripts/verify_python_distribution.py \
+            --wheel dist/theory_first-0.3.0-py3-none-any.whl \
+            --sdist dist/theory_first-0.3.0.tar.gz
+      - name: Share the exact checked release artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: theory-first-python-0.3.0
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 1
+      - name: Install the wheel into isolated host homes
+        shell: bash
+        run: |
+          python -m venv "$RUNNER_TEMP/consumer"
+          "$RUNNER_TEMP/consumer/bin/python" -m pip install dist/theory_first-0.3.0-py3-none-any.whl
+          export HOME="$RUNNER_TEMP/home"
+          export CODEX_HOME="$RUNNER_TEMP/codex-home-must-not-be-used"
+          export CLAUDE_CONFIG_DIR="$RUNNER_TEMP/claude"
+          export XDG_CONFIG_HOME="$RUNNER_TEMP/config"
+          "$RUNNER_TEMP/consumer/bin/theory-first" --version
+          "$RUNNER_TEMP/consumer/bin/theory-first" install \
+            --agent codex --agent claude-code --agent opencode
+          for root in "$HOME/.agents/skills" "$CLAUDE_CONFIG_DIR/skills"; do
+            test "$(find "$root" -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 7
+            test -f "$root/theory-first/SKILL.md"
+            test -f "$root/theory-fix/SKILL.md"
+          done
+          test ! -e "$CODEX_HOME/skills"
+          test ! -e "$XDG_CONFIG_HOME/opencode/skills"
+
+          export HOME="$RUNNER_TEMP/opencode-home"
+          export XDG_CONFIG_HOME="$RUNNER_TEMP/opencode-config"
+          "$RUNNER_TEMP/consumer/bin/theory-first" install --agent opencode
+          root="$XDG_CONFIG_HOME/opencode/skills"
+          test "$(find "$root" -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 7
+          test -f "$root/theory-first/SKILL.md"
+          test -f "$root/theory-fix/SKILL.md"
+
+  python-installer-platforms:
+    needs: python-package
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Download the exact checked release artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: theory-first-python-0.3.0
+          path: dist
+      - name: Exercise the release wheel on the host filesystem
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest
+          python -m pip install dist/theory_first-0.3.0-py3-none-any.whl
+          python -c "import theory_first; assert theory_first.__version__ == '0.3.0'"
+          python -c "import subprocess; assert subprocess.check_output(['theory-first', '--version'], text=True).strip() == '0.3.0'"
+          python -m pytest -c tests/pytest-installed.ini tests/test_python_package.py

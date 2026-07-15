@@ -7,6 +7,9 @@ This is a public, domain-neutral, cross-platform Agent Skills suite for computat
 - `README.md` defines the canonical English product boundary and public
   workflow; `README.zh-CN.md` is its complete Simplified Chinese translation.
 - `plugins/theory-first/skills/` is the single runtime source for every host.
+- `src/theory_first/` is the zero-dependency Python installer; Hatch force-
+  includes the canonical skills into wheels without creating a second source
+  tree in the repository.
 - `plugins/theory-first/.codex-plugin/plugin.json` and
   `plugins/theory-first/.claude-plugin/plugin.json` are thin host adapters.
 - `.agents/plugins/marketplace.json` and `.claude-plugin/marketplace.json`
@@ -30,12 +33,18 @@ This is a public, domain-neutral, cross-platform Agent Skills suite for computat
 - Keep the two README pages as separate single-language documents with
   reciprocal language links. Preserve commands, paths, status identifiers,
   versions, and link targets exactly across translations.
+- Never hand-copy skills into `src/`. Python artifacts must map directly from
+  `plugins/theory-first/skills/`, and distribution verification must compare
+  every tracked payload file by digest.
 
 ## Validate
 
 ```bash
 python -m pip install -e '.[dev]'
 pytest
+python -m build
+python -m twine check dist/*
+python scripts/verify_python_distribution.py --wheel dist/theory_first-0.3.0-py3-none-any.whl --sdist dist/theory_first-0.3.0.tar.gz
 ```
 
 Also run the current Agent Skills, Codex, and Claude Code validators when they

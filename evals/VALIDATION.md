@@ -4,6 +4,31 @@ This record separates release-specific packaging evidence. It is evidence about
 skill and host contracts, not proof that scientific conclusions produced with
 the suite are correct.
 
+## v0.3.0 Python distribution candidate
+
+- The project builds `theory_first-0.3.0.tar.gz` and the platform-independent
+  `theory_first-0.3.0-py3-none-any.whl` from a pinned Hatchling backend.
+- The wheel force-includes the 27 tracked canonical skill payload files without
+  a second source tree. The release verifier confirmed identical file sets and
+  SHA-256 digests across the repository, sdist, and wheel.
+- `twine check` passed both artifacts, and the repository gate passed 82 tests.
+- A clean wheel install exposed version `0.3.0`, listed exactly seven skills,
+  and copied byte-identical suites into isolated Codex, Claude Code, and
+  OpenCode user paths. OpenCode `1.18.2` discovered both orchestrator entry
+  points from the installed wheel payload.
+- Installer regression coverage includes native user/project path mapping,
+  dangling and external symlinks, non-overwriting conflict behavior, staged
+  multi-target rollback, `KeyboardInterrupt` recovery, post-commit cleanup
+  reporting, external-write preservation, and commit-time races.
+  CI also exercises the filesystem transaction tests on Linux, macOS, and
+  Windows.
+
+Release-time checks still pending in this snapshot: attach both artifacts to a
+passing `v0.3.0` GitHub release, install the wheel through its public HTTPS URL,
+and rerun isolated discovery. Direct PyPI publication additionally requires a
+publisher credential or trusted-publisher configuration that is not present in
+this environment; it is not represented as complete.
+
 ## v0.2.0 cross-platform release
 
 ### Open standard and repository contracts

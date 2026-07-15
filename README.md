@@ -75,6 +75,45 @@ dependency-bearing skill that cannot discover a child stops with
 Codex and Claude plugins already install the complete suite; the portable
 commands below deliberately use `--skill '*'`.
 
+### pip package
+
+The platform-independent wheel contains the same canonical seven-skill suite
+and a zero-dependency installer. Install the pinned release directly with pip:
+
+```bash
+python -m pip install https://github.com/cxMoonGlade/Theory-First/releases/download/v0.3.0/theory_first-0.3.0-py3-none-any.whl
+```
+
+Then install the complete suite for one host:
+
+```bash
+theory-first install --agent opencode
+```
+
+Repeat `--agent` to configure several hosts from the same wheel, or select a
+project-local discovery path:
+
+```bash
+theory-first install --agent codex --agent claude-code --agent opencode
+theory-first install --agent codex --scope project --project .
+```
+
+OpenCode also discovers skills in the standard Codex and Claude-compatible
+roots. When one of those exact roots already covers an OpenCode request, the
+installer omits a redundant native OpenCode copy. A standalone OpenCode install,
+or one paired with a custom `CLAUDE_CONFIG_DIR`, uses its native discovery path.
+
+The installer refuses same-named filesystem paths detected before or during a
+normal installation. Review them first, then pass `--force` only when replacing
+the complete installed suite is intended. Requested targets are staged first
+and rolled back together on ordinary errors or interrupts before all target
+swaps commit. If post-commit cleanup is interrupted, the new suite remains
+active and the error reports any leftover transaction directories for manual
+inspection. Abrupt process or machine termination is outside these guarantees.
+Use `theory-first list`,
+`theory-first path`, or `theory-first install --target /path/to/skills` for
+inspection and other Agent Skills hosts.
+
 ### OpenCode and other Agent Skills clients
 
 The cross-platform [`skills`](https://github.com/vercel-labs/skills) CLI can
@@ -94,7 +133,7 @@ Use `--copy` on hosts where symlinks are unavailable. For a reproducible install
 pin both the installer and this repository's skill directory:
 
 ```bash
-npx skills@1.5.17 add https://github.com/cxMoonGlade/Theory-First/tree/v0.2.0/plugins/theory-first/skills --skill '*' --agent opencode --global --copy --yes
+npx skills@1.5.17 add https://github.com/cxMoonGlade/Theory-First/tree/v0.3.0/plugins/theory-first/skills --skill '*' --agent opencode --global --copy --yes
 ```
 
 OpenCode loads skills through its native `skill` tool. A portable explicit
@@ -196,6 +235,8 @@ research.
 
 ## Examples and evaluation cases
 
+- [Usage guide with copyable prompts](docs/USAGE.md)
+- [Smart-traffic worked comparison: Theory First vs ordinary deep research](evals/examples/smart-traffic-management/README.md)
 - [Theory-first walkthrough](examples/theory-first-walkthrough.md)
 - [Theory-fix walkthrough](examples/theory-fix-walkthrough.md)
 - [Routing cases](evals/cases.json)

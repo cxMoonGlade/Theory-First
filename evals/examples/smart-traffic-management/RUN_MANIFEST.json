@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "run_id": "STM-COMPARE-001-v1",
+  "snapshot_date": "2026-07-15",
+  "comparison_kind": "qualitative same-prompt retrospective process comparison",
+  "simulation_executed": false,
+  "local_calibration_data_used": false,
+  "arms": {
+    "theory_first": {
+      "runner": "OpenAI Codex agent session",
+      "serving_model_identifier": "not persisted in the repository",
+      "workflow": "released seven-skill Theory First suite",
+      "research_surfaces": [
+        "repository inspection",
+        "public academic search",
+        "public web search",
+        "private full-text inspection without redistribution"
+      ],
+      "raw_transcript_published": false
+    },
+    "ordinary_research": {
+      "runner": "separate OpenAI Codex agent session",
+      "serving_model_identifier": "not persisted in the repository",
+      "workflow": "ordinary public academic and web research without Theory First artifacts",
+      "research_surfaces": [
+        "public academic search",
+        "public official web sources"
+      ],
+      "raw_transcript_published": false
+    }
+  },
+  "audit_limits": [
+    "The repository records the isolation procedure but cannot independently prove blindness without raw runner transcripts.",
+    "PRIMARY_AXES.md was added after the Theory First landscape existed, so the axes were not preregistered before both arms ran.",
+    "Hashes were computed after final audit corrections; they identify the release snapshot and do not prove generation order.",
+    "The prompt did not freeze original vehicle-only Q-MP as the exact intervention."
+  ],
+  "hash_algorithm": "sha256",
+  "snapshot_hashes": {
+    "PROMPT.md": "2316ac76065057c048f44dbba2f4f829a7d72fb9ea3b75856027ab6bff6350b1",
+    "RUBRIC.md": "cf65aed01134c3e4025a784d6fac6ef6ddd021d3028745668c4b0b92db204358",
+    "PRIMARY_AXES.md": "1604926edfcda0cfae42a05d6a6d1301c212829304d929017590e91ea03dae90",
+    "DEEP_RESEARCH_BASELINE.md": "760fa09cce106ec66cfd7c8ecfa94dad5de63b58cae3f98fc4418a97e7048b25",
+    "THEORY_FIRST_LANDSCAPE.md": "1045dc9247112cdb3e6ab0cf9a86682dfdda8f662c125ddce32f93de04009237",
+    "THEORY_FIRST_PACKET.md": "9a80ab284d9c91167439714db947ff0f7cf134c777d82a4426a7556e51050319",
+    "THEORY_FIRST_PREREGISTRATION_GATE.md": "71578d9381ae228f02fabd1ba19fefde97aa35852b1a6b9be97663ab8ec376a6",
+    "scorecards/THEORY_FIRST_SCORECARD.md": "dbfde75e62ddc0f8a72da1eae0891d8691a107e34125ee2caa4cac847f807e85",
+    "scorecards/ORDINARY_RESEARCH_SCORECARD.md": "c3c1a4c1a1b6f9038bb8dfe76526749d271b7fe91fd3c1ed8e72af7306ea5661"
+  }
+}

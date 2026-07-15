@@ -2,10 +2,20 @@
 
 All notable changes to Theory First are recorded here.
 
-## Unreleased
+## 0.3.0 — 2026-07-15
 
-- Added a complete Simplified Chinese README with one-click language switching
-  between separate single-language pages.
+- Added a zero-dependency `theory-first` Python installer that ships the
+  canonical seven-skill suite in a platform-independent wheel.
+- Added user, project, and explicit-target installation for Codex, Claude Code,
+  OpenCode, and other Agent Skills hosts, with conflict checks, cooperative
+  locks, cross-target rollback, and no redundant native OpenCode copy.
+- Added complete English and Simplified Chinese usage guides with copyable
+  prompts and one-click language switching between separate pages.
+- Added a source-audited smart-traffic worked example comparing Theory First
+  with an isolated ordinary deep-research arm on illusion and drift resistance.
+- Added closed-world wheel/sdist verification, RECORD integrity checks, and
+  transaction tests covering interrupts, concurrent writes, and multi-target
+  rollback across Linux, macOS, and Windows CI.
 
 ## 0.2.0 — 2026-07-15
 

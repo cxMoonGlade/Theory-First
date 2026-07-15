@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import re
+import subprocess
 from pathlib import Path
 
 import yaml
@@ -10,7 +12,10 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / "plugins" / "theory-first"
 SKILLS = PLUGIN / "skills"
-VERSION = "0.2.0"
+PYPROJECT = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+VERSION_MATCH = re.search(r'^version = "([^"]+)"$', PYPROJECT, re.MULTILINE)
+assert VERSION_MATCH is not None
+VERSION = VERSION_MATCH.group(1)
 EXPECTED_SKILLS = {
     "theory-first",
     "theory-fix",
@@ -204,18 +209,45 @@ def test_plugin_and_marketplace_manifests() -> None:
 
 
 def test_release_version_is_synchronized() -> None:
-    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(
+        encoding="utf-8"
+    )
+    agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    validation = (ROOT / "evals" / "VALIDATION.md").read_text(
+        encoding="utf-8"
+    )
     readmes = [
         (ROOT / name).read_text(encoding="utf-8")
         for name in ("README.md", "README.zh-CN.md")
     ]
-    assert f'version = "{VERSION}"' in pyproject
     assert f"## {VERSION} " in changelog
     assert all(
         f"/tree/v{VERSION}/plugins/theory-first/skills" in readme
         for readme in readmes
     )
+    wheel = f"theory_first-{VERSION}-py3-none-any.whl"
+    sdist = f"theory_first-{VERSION}.tar.gz"
+    artifact = f"theory-first-python-{VERSION}"
+    wheel_url = (
+        "https://github.com/cxMoonGlade/Theory-First/releases/download/"
+        f"v{VERSION}/{wheel}"
+    )
+    assert all(value in workflow for value in (wheel, sdist, artifact, VERSION))
+    assert all(value in agents for value in (wheel, sdist))
+    assert all(value in validation for value in (wheel, sdist, f"v{VERSION}"))
+    assert all(wheel_url in readme for readme in readmes)
+
+
+def test_python_distribution_uses_the_canonical_skill_source() -> None:
+    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    assert 'name = "theory-first"' in pyproject
+    assert 'theory-first = "theory_first.cli:main"' in pyproject
+    assert (
+        '"plugins/theory-first/skills" = "theory_first/bundle/skills"'
+        in pyproject
+    )
+    assert not (ROOT / "src" / "theory_first" / "bundle" / "skills").exists()
 
 
 def test_public_installation_surfaces_are_documented() -> None:
@@ -274,6 +306,10 @@ def test_readmes_are_separate_reciprocal_language_pages() -> None:
     assert english_bash == chinese_bash
 
     required_commands = {
+        f"python -m pip install https://github.com/cxMoonGlade/Theory-First/releases/download/v{VERSION}/theory_first-{VERSION}-py3-none-any.whl",
+        "theory-first install --agent opencode",
+        "theory-first install --agent codex --agent claude-code --agent opencode",
+        "theory-first install --agent codex --scope project --project .",
         "npx skills add cxMoonGlade/Theory-First --skill '*' --agent opencode --global --yes",
         "npx skills add cxMoonGlade/Theory-First --skill '*' --agent claude-code --agent opencode --agent codex --global --yes",
         f"npx skills@1.5.17 add https://github.com/cxMoonGlade/Theory-First/tree/v{VERSION}/plugins/theory-first/skills --skill '*' --agent opencode --global --copy --yes",
@@ -286,7 +322,14 @@ def test_readmes_are_separate_reciprocal_language_pages() -> None:
         assert all(command in document for command in required_commands)
 
     markdown_link = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
-    language_pages = {"README.md", "README.zh-CN.md"}
+    language_pages = {
+        "README.md",
+        "README.zh-CN.md",
+        "docs/USAGE.md",
+        "docs/USAGE.zh-CN.md",
+        "evals/examples/smart-traffic-management/README.md",
+        "evals/examples/smart-traffic-management/README.zh-CN.md",
+    }
     english_targets = sorted(
         target
         for target in markdown_link.findall(english)
@@ -308,11 +351,141 @@ def test_readmes_are_separate_reciprocal_language_pages() -> None:
         "REPAIR",
         "STOP",
         "REOPEN_EVIDENCE",
-        "v0.2.0",
+        f"v{VERSION}",
         "plugins/theory-first/skills/",
     }
     assert all(identifier in english for identifier in identifiers)
     assert all(identifier in chinese for identifier in identifiers)
+
+
+def test_usage_guides_are_paired_and_cover_the_routing_contract() -> None:
+    english_path = ROOT / "docs" / "USAGE.md"
+    chinese_path = ROOT / "docs" / "USAGE.zh-CN.md"
+    english = english_path.read_text(encoding="utf-8")
+    chinese = chinese_path.read_text(encoding="utf-8")
+
+    assert [line for line in english.splitlines() if line][:2] == [
+        "# Usage Guide",
+        "English | [简体中文](USAGE.zh-CN.md)",
+    ]
+    assert [line for line in chinese.splitlines() if line][:2] == [
+        "# 使用指南",
+        "[English](USAGE.md) | 简体中文",
+    ]
+    assert english.count("(USAGE.zh-CN.md)") == 1
+    assert chinese.count("(USAGE.md)") == 1
+    assert "(docs/USAGE.md)" in (ROOT / "README.md").read_text(
+        encoding="utf-8"
+    )
+    assert "(docs/USAGE.zh-CN.md)" in (
+        ROOT / "README.zh-CN.md"
+    ).read_text(encoding="utf-8")
+
+    assert len(re.findall(r"^## Case [1-7] ", english, re.MULTILINE)) == 7
+    assert len(re.findall(r"^## 案例 [1-7] ", chinese, re.MULTILINE)) == 7
+
+    command_block = re.compile(r"```(?:bash|text)\n(.*?)\n```", re.DOTALL)
+    english_commands = command_block.findall(english)
+    chinese_commands = command_block.findall(chinese)
+    assert english_commands
+    assert english_commands == chinese_commands
+    identifiers = EXPECTED_SKILLS | {
+        "SUITE_INCOMPLETE",
+        "CODE_BLOCKED",
+        "CODE_PERMITTED",
+        "SEARCH_EXHAUSTED_GAP",
+        "STOP",
+        "REPAIR",
+        "REOPEN_EVIDENCE",
+        "ACCEPT_WITH_CLASS",
+    }
+    for document in (english, chinese):
+        assert all(identifier in document for identifier in identifiers)
+
+    han = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff]")
+    assert not han.search(english.replace("简体中文", "", 1))
+
+    chinese_prose = re.sub(r"```.*?```", "", chinese, flags=re.DOTALL)
+    chinese_prose = re.sub(r"`[^`\n]*`", "", chinese_prose)
+    chinese_prose = re.sub(r"\]\([^)]+\)", "]", chinese_prose)
+    long_english_blocks = [
+        block
+        for raw_block in re.split(r"\n\s*\n", chinese_prose)
+        if (block := re.sub(r"\s+", " ", raw_block).strip())
+        and len(re.sub(r"\W+", "", block)) >= 40
+        and not han.search(block)
+    ]
+    assert long_english_blocks == []
+
+    markdown_link = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+    for path, document in ((english_path, english), (chinese_path, chinese)):
+        for target in markdown_link.findall(document):
+            if target.startswith(("https://", "http://", "mailto:", "#")):
+                continue
+            relative = target.split("#", 1)[0]
+            assert (path.parent / relative).is_file(), (
+                f"broken usage-guide link in {path.name}: {target}"
+            )
+
+
+def test_smart_traffic_example_is_paired_and_auditable() -> None:
+    root = ROOT / "evals" / "examples" / "smart-traffic-management"
+    english = (root / "README.md").read_text(encoding="utf-8")
+    chinese = (root / "README.zh-CN.md").read_text(encoding="utf-8")
+    comparison = (root / "COMPARISON.md").read_text(encoding="utf-8")
+    comparison_chinese = (root / "COMPARISON.zh-CN.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert [line for line in english.splitlines() if line][:2] == [
+        "# Smart Traffic Management Worked Example",
+        "English | [简体中文](README.zh-CN.md)",
+    ]
+    assert [line for line in chinese.splitlines() if line][:2] == [
+        "# 智能交通管理完整实例",
+        "[English](README.md) | 简体中文",
+    ]
+    assert "[简体中文](COMPARISON.zh-CN.md)" in comparison
+    assert "[English](COMPARISON.md)" in comparison_chinese
+    for document in (english, chinese, comparison, comparison_chinese):
+        assert all(
+            status in document
+            for status in ("CONTROLLED", "ANCHORED", "CODE_BLOCKED")
+        )
+    assert "definition watch item" in english
+    assert "定义 watch item" in chinese
+    assert "retrospective rather than\npreregistered" in comparison
+    assert "回顾性审计" in comparison_chinese
+    for artifact in (
+        "PROMPT.md",
+        "PRIMARY_AXES.md",
+        "RUBRIC.md",
+        "RUN_LOG.md",
+        "RUN_MANIFEST.json",
+        "DEEP_RESEARCH_BASELINE.md",
+        "THEORY_FIRST_LANDSCAPE.md",
+        "THEORY_FIRST_PACKET.md",
+        "THEORY_FIRST_PREREGISTRATION_GATE.md",
+    ):
+        assert (root / artifact).is_file()
+    assert {
+        path.name for path in (root / "scorecards").glob("*.md")
+    } == {
+        "THEORY_FIRST_SCORECARD.md",
+        "ORDINARY_RESEARCH_SCORECARD.md",
+    }
+    assert len(tuple((root / "source-audits").glob("*.md"))) == 5
+
+    manifest = json.loads((root / "RUN_MANIFEST.json").read_text(encoding="utf-8"))
+    assert manifest["comparison_kind"].endswith(
+        "retrospective process comparison"
+    )
+    assert manifest["arms"]["theory_first"]["raw_transcript_published"] is False
+    assert manifest["arms"]["ordinary_research"]["raw_transcript_published"] is False
+    for relative, expected_digest in manifest["snapshot_hashes"].items():
+        assert hashlib.sha256((root / relative).read_bytes()).hexdigest() == (
+            expected_digest
+        )
 
 
 def test_project_profile_uses_declarative_safe_argv() -> None:
@@ -394,25 +567,61 @@ def test_parent_child_collision_cases_are_explicit() -> None:
 
 
 def test_no_research_full_text_or_pdf_is_bundled() -> None:
-    forbidden_suffixes = {".pdf", ".html", ".txt"}
-    generated_parts = {
-        ".git",
-        ".pytest_cache",
-        ".venv",
-        "__pycache__",
-        "build",
-        "dist",
-        "venv",
-    }
+    forbidden_suffixes = {".pdf", ".epub", ".docx", ".html", ".txt"}
+    candidates = subprocess.run(
+        [
+            "git",
+            "ls-files",
+            "-z",
+            "--cached",
+            "--others",
+            "--exclude-standard",
+        ],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+    ).stdout.split(b"\0")
     bundled = [
-        path.relative_to(ROOT)
-        for path in ROOT.rglob("*")
-        if path.is_file()
-        and path.suffix.lower() in forbidden_suffixes
-        and not generated_parts.intersection(path.parts)
-        and not any(part.endswith(".egg-info") for part in path.parts)
+        path
+        for candidate in candidates
+        if candidate
+        and (path := Path(candidate.decode("utf-8"))).suffix.lower()
+        in forbidden_suffixes
     ]
     assert bundled == []
+
+    tracked = subprocess.run(
+        ["git", "ls-files", "-z", "--cached"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+    ).stdout.split(b"\0")
+    private_section = (ROOT / ".gitignore").read_text(encoding="utf-8").split(
+        "# Private/generated research artifacts\n", 1
+    )[1]
+    private_roots = {
+        line.removesuffix("/")
+        for raw_line in private_section.splitlines()
+        if (line := raw_line.strip()).endswith("/")
+        and not set("*?[").intersection(line)
+    }
+    assert private_roots == {
+        ".theory-first",
+        "private-artifacts",
+        "downloads",
+        "papers",
+        "reading-notes",
+        "extracted-text",
+    }
+    private_cache_paths = [
+        path
+        for candidate in tracked
+        if candidate
+        and private_roots.intersection(
+            (path := Path(candidate.decode("utf-8"))).parts
+        )
+    ]
+    assert private_cache_paths == []
 
 
 def test_relative_markdown_links_resolve() -> None:

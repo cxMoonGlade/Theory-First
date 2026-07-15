@@ -23,6 +23,12 @@ retrieval system, or compute environment.
    change touches skills or platform manifests.
 6. Review the diff for private artifacts and third-party content.
 
+Changes to the Python installer or packaging must also build both artifacts,
+run `twine check`, enforce a closed member set and wheel `RECORD` integrity,
+compare the complete wheel and sdist skill payloads against the tracked
+canonical source, and install the wheel in a clean environment. Do not create a
+hand-maintained skill copy under `src/`.
+
 When changing public README content, update both `README.md` and
 `README.zh-CN.md`. Keep them as separate single-language pages, and preserve
 commands, paths, status identifiers, versions, and link targets across the

@@ -1,16 +1,43 @@
 [build-system]
-requires = ["setuptools>=68"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling==1.31.0"]
+build-backend = "hatchling.build"
 
 [project]
-name = "theory-first-plugin"
-version = "0.2.0"
-description = "Validation harness for the cross-platform Theory First agent skills"
+name = "theory-first"
+version = "0.3.0"
+description = "Cross-platform evidence gates for rigorous computational science"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "cxMoonGlade" }]
 dependencies = []
+keywords = [
+  "agent-skills",
+  "claude-code",
+  "codex",
+  "opencode",
+  "research",
+  "scientific-method",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering",
+]
+
+[project.urls]
+Homepage = "https://github.com/cxMoonGlade/Theory-First"
+Issues = "https://github.com/cxMoonGlade/Theory-First/issues"
+Repository = "https://github.com/cxMoonGlade/Theory-First"
+
+[project.scripts]
+theory-first = "theory_first.cli:main"
 
 [project.optional-dependencies]
 paper = [
@@ -21,12 +48,31 @@ dev = [
   "pypdf>=6,<7",
   "pytest>=8.0",
 ]
+release = [
+  "build==1.5.0",
+  "tomli==2.2.1; python_version < '3.11'",
+  "twine==6.2.0",
+]
 
-[tool.setuptools]
-py-modules = []
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src",
+  "/plugins/theory-first/skills",
+  "/LICENSE",
+  "/README.md",
+  "/README.zh-CN.md",
+  "/pyproject.toml",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/theory_first"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"plugins/theory-first/skills" = "theory_first/bundle/skills"
 
 [tool.pytest.ini_options]
 addopts = "-q"
+pythonpath = ["src", "."]
 testpaths = [
   "tests",
   "plugins/theory-first/skills/deep-read-paper/tests",
