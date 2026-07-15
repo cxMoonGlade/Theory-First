@@ -25,11 +25,26 @@ the suite are correct.
   CI also exercises the filesystem transaction tests on Linux, macOS, and
   Windows.
 
-Release-time checks still pending in this snapshot: attach both artifacts to a
-passing `v0.3.0` GitHub release, install the wheel through its public HTTPS URL,
-and rerun isolated discovery. Direct PyPI publication additionally requires a
-publisher credential or trusted-publisher configuration that is not present in
-this environment; it is not represented as complete.
+Release-time checks completed after this candidate snapshot was tagged:
+
+- Annotated tag `v0.3.0` points to commit
+  `e9a23fc84f7ae8675253d6eb2f278e524bf93651`; all nine jobs in
+  [CI run 29445944649](https://github.com/cxMoonGlade/Theory-First/actions/runs/29445944649)
+  passed, including installed-wheel transaction tests on Ubuntu, macOS, and
+  Windows.
+- The public [Theory First v0.3.0 release](https://github.com/cxMoonGlade/Theory-First/releases/tag/v0.3.0)
+  contains the verified wheel and sdist. Their SHA-256 digests are
+  `2f3dd9708840c1455aeceab271d6215f8d29cdee925c5dcf627ed4975bcb3bc1`
+  and `b9e30a44b7ce77696913bfe15788eeb05857b1d4fbec86cde05b15e078f12c71`,
+  respectively.
+- A fresh environment installed the wheel through its public GitHub HTTPS URL,
+  reported version `0.3.0`, listed exactly seven skills, and resolved a combined
+  Codex, Claude Code, and OpenCode request to the expected deduplicated isolated
+  host paths.
+
+Direct PyPI publication still requires a publisher credential or
+trusted-publisher configuration that is not present in this environment; it is
+not represented as complete.
 
 ## v0.2.0 cross-platform release
 
