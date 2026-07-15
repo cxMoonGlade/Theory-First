@@ -1,0 +1,4 @@
+interface:
+  display_name: "Map Research Landscape"
+  short_description: "Map a field before choosing a narrow path"
+  default_prompt: "Use $map-research-landscape to map the surrounding research before narrowing scope."

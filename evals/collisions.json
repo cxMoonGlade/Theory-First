@@ -1,0 +1,32 @@
+{
+  "cases": [
+    {
+      "id": "result-without-refreshed-evidence",
+      "prompt": "This result is surprisingly clean and will drive tomorrow's design decision. We have not reopened the literature or assembled a closure packet; try to falsify it.",
+      "expected_skill": "theory-fix",
+      "must_not_route_directly_to": "stress-test-claim",
+      "rationale": "The orchestrator must refresh evidence before its stress-test child can run."
+    },
+    {
+      "id": "frozen-closed-packet-ready-for-wires",
+      "prompt": "Here are the frozen claim, refreshed CLOSED packet, immutable preregistration, raw results, and artifact hashes. Run the eight falsification trip-wires only; do not reacquire literature or repair code.",
+      "expected_skill": "stress-test-claim",
+      "must_not_route_directly_to": "theory-fix",
+      "rationale": "All child preconditions are explicitly present and the requested scope is only wire execution."
+    },
+    {
+      "id": "new-unclosed-experiment",
+      "prompt": "Design a new experiment around this mechanism, but the load-bearing literature and metrics have not been checked yet.",
+      "expected_skill": "theory-first",
+      "must_not_route_directly_to": "preregister-claim",
+      "rationale": "Preregistration cannot begin until the orchestrator closes the premise rows."
+    },
+    {
+      "id": "closed-packet-ready-for-preregistration",
+      "prompt": "The frozen claim and CLOSED literature packet are attached. Freeze predictions, controls, value provenance, and decision rules before code; do not search again.",
+      "expected_skill": "preregister-claim",
+      "must_not_route_directly_to": "theory-first",
+      "rationale": "The user supplies the child preconditions and explicitly narrows the task to preregistration."
+    }
+  ]
+}

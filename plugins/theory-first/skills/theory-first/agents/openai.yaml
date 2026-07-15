@@ -1,0 +1,4 @@
+interface:
+  display_name: "Theory First"
+  short_description: "Ground claims before claim-bearing code"
+  default_prompt: "Use $theory-first to ground this scientific claim before implementation."

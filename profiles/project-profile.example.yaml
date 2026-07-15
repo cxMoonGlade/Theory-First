@@ -1,0 +1,65 @@
+schema_version: 1
+
+project:
+  name: "<project name>"
+  domain: "<scientific or technical domain>"
+  root: "."
+
+authority:
+  binding_docs:
+    - "<relative/path/to/specification.md>"
+  claim_boundary_docs:
+    - "<relative/path/to/claim-boundaries.md>"
+  terminology_docs: []
+
+evidence:
+  source_metadata_dirs: []
+  reading_note_dirs:
+    - "<relative/path/to/reading-notes>"
+  closure_packet_dirs:
+    - "<relative/path/to/evidence-closure>"
+  preregistration_dirs:
+    - "<relative/path/to/preregistrations>"
+  immutable_outcome_dirs: []
+
+retrieval:
+  local_corpora: []
+  # Each command is disabled until its target has been inspected.
+  # Append the query after query_flag as one argv item; never interpolate it.
+  commands:
+    - name: "<local retriever name>"
+      enabled: false
+      working_directory: "."
+      argv: ["python", "-m", "<project.search_module>"]
+      query_flag: "--query"
+      read_only: true
+
+standards:
+  metric_ledger: "<relative/path/to/metrics.md>"
+  numerical_provenance_ledger: "<relative/path/to/numerical-provenance.md>"
+  statement_types:
+    exact: "theorem, identity, or zero-tolerance constraint"
+    registered_prediction: "prediction fixed before measurement"
+    heuristic_gate: "go/no-go threshold that cannot support an exact premise"
+  claim_confidence_classes:
+    - "tentative"
+    - "supported"
+    - "established"
+
+gates:
+  literature_closed: "all load-bearing premise rows are closed"
+  code_permitted: "closure packet complete and preregistration gate passed"
+  result_accepted: "claim survived current wires at its registered confidence class"
+
+privacy:
+  never_export_paths: []
+  never_export_content:
+    - "credentials and tokens"
+    - "licensed paper full text"
+    - "private hypotheses unless the user explicitly authorizes disclosure"
+    - "absolute local paths"
+
+execution:
+  claim_bearing_code_requires: "CODE_PERMITTED"
+  network_policy: "use only user-authorized retrieval tools and destinations"
+  compute_policy: "follow the target project's declared limits"

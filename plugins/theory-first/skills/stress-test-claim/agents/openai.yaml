@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stress Test Claim"
+  short_description: "Try to falsify a scientific claim"
+  default_prompt: "Use $stress-test-claim to run independent trip-wires against this claim."

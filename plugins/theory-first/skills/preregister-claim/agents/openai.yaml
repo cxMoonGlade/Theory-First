@@ -1,0 +1,4 @@
+interface:
+  display_name: "Preregister Claim"
+  short_description: "Turn closed evidence into a falsifiable plan"
+  default_prompt: "Use $preregister-claim to freeze predictions and falsifiers before code or results."

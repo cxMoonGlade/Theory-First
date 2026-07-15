@@ -1,0 +1,4 @@
+interface:
+  display_name: "Theory Fix"
+  short_description: "Falsify results before they propagate"
+  default_prompt: "Use $theory-fix to challenge this result before it supports downstream work."

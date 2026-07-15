@@ -1,0 +1,40 @@
+{
+  "name": "theory-first",
+  "version": "0.1.0",
+  "description": "Evidence closure, preregistration, and adversarial claim testing for computational science.",
+  "author": {
+    "name": "cxMoonGlade",
+    "url": "https://github.com/cxMoonGlade"
+  },
+  "homepage": "https://github.com/cxMoonGlade/Theory-First",
+  "repository": "https://github.com/cxMoonGlade/Theory-First",
+  "license": "MIT",
+  "keywords": [
+    "research",
+    "scientific-method",
+    "literature-review",
+    "preregistration",
+    "falsification",
+    "reproducibility"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Theory First",
+    "shortDescription": "Evidence gates for computational science",
+    "longDescription": "Close load-bearing literature gaps, read decisive sources deeply, preregister claims before code, and try to falsify results before they propagate.",
+    "developerName": "cxMoonGlade",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/cxMoonGlade/Theory-First",
+    "privacyPolicyURL": "https://github.com/cxMoonGlade/Theory-First/blob/main/PRIVACY.md",
+    "defaultPrompt": [
+      "Ground this experiment with $theory-first before implementation.",
+      "Challenge this result with $theory-fix before it propagates.",
+      "Inspect this source with $deep-read-paper at equation-level fidelity."
+    ],
+    "brandColor": "#2F6B5F"
+  }
+}

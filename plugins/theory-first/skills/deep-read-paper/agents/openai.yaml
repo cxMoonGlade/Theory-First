@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deep Read Paper"
+  short_description: "Read one source at equation-level fidelity"
+  default_prompt: "Use $deep-read-paper to inspect this source at equation and implementation fidelity."

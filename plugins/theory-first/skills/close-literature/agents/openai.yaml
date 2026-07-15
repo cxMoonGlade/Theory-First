@@ -1,0 +1,4 @@
+interface:
+  display_name: "Close Literature"
+  short_description: "Close every load-bearing evidence gap"
+  default_prompt: "Use $close-literature to close the evidence gaps for this frozen claim."

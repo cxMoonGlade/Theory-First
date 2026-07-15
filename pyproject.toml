@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "theory-first-plugin"
+version = "0.1.0"
+description = "Validation harness for the Theory First Codex plugin"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "cxMoonGlade" }]
+dependencies = []
+
+[project.optional-dependencies]
+paper = [
+  "pypdf>=6,<7",
+]
+dev = [
+  "PyYAML>=6.0",
+  "pypdf>=6,<7",
+  "pytest>=8.0",
+]
+
+[tool.setuptools]
+py-modules = []
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = [
+  "tests",
+  "plugins/theory-first/skills/deep-read-paper/tests",
+]

@@ -1,0 +1,60 @@
+{
+  "cases": [
+    {
+      "id": "positive-new-mechanism-experiment",
+      "prompt": "We want to add a new regularization mechanism to our simulator and test whether it changes the observable scaling law. Ground the experiment before anyone writes the claim-bearing implementation.",
+      "should_trigger": true,
+      "expected_skill": "theory-first",
+      "rationale": "A new scientific mechanism, observable, and experiment require evidence closure and preregistration before code."
+    },
+    {
+      "id": "positive-surprising-clean-result",
+      "prompt": "Every seed shows the same unexpectedly large improvement, and the team wants to cite it in the design document tomorrow. Check whether it is real or an artifact before it propagates.",
+      "should_trigger": true,
+      "expected_skill": "theory-fix",
+      "rationale": "A clean, surprising, consequential result needs literature reopening, adversarial tests, and a propagation gate."
+    },
+    {
+      "id": "positive-single-paper-equations",
+      "prompt": "Read this one paper closely enough that we can reconstruct Equation 12, verify the assumptions behind Figure 4, and distinguish the authors' result from our intended extension.",
+      "should_trigger": true,
+      "expected_skill": "deep-read-paper",
+      "rationale": "The task is an equation-, figure-, and inference-faithful close read of one load-bearing source."
+    },
+    {
+      "id": "positive-known-literature-gaps",
+      "prompt": "Our claim packet has sources for the mechanism but no defensible bridge from the latent state to the measured observable. Search local indexes and external literature, record the search boundary, and close or explicitly scope that gap.",
+      "should_trigger": true,
+      "expected_skill": "close-literature",
+      "rationale": "The claim is frozen and a specific load-bearing evidence row is open."
+    },
+    {
+      "id": "positive-preregister-closed-claim",
+      "prompt": "The literature packet is complete. Before we inspect any results, freeze the metric, prediction band, independent ground truth, numerical-value provenance, constraints, and negative controls.",
+      "should_trigger": true,
+      "expected_skill": "preregister-claim",
+      "rationale": "The request starts from closed evidence and asks for a falsifiable preregistration before result inspection."
+    },
+    {
+      "id": "negative-ui-copy-change",
+      "prompt": "Change the settings button label from Apply to Save and update the snapshot test.",
+      "should_trigger": false,
+      "expected_skill": null,
+      "rationale": "A routine user-interface edit has no scientific claim or evidence-governance requirement."
+    },
+    {
+      "id": "negative-known-parser-bug",
+      "prompt": "The CSV parser drops the last row when the file lacks a trailing newline. Reproduce the bug, fix it, and add a regression test.",
+      "should_trigger": false,
+      "expected_skill": null,
+      "rationale": "This is a bounded software defect with a known behavioral oracle, not a scientific-theory review."
+    },
+    {
+      "id": "negative-general-paper-summary",
+      "prompt": "Give me a short, nontechnical summary of this paper for our weekly newsletter.",
+      "should_trigger": false,
+      "expected_skill": null,
+      "rationale": "A general-audience summary does not ask for a load-bearing close read, evidence closure, preregistration, or falsification."
+    }
+  ]
+}
