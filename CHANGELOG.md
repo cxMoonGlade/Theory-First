@@ -2,6 +2,11 @@
 
 All notable changes to Theory First are recorded here.
 
+## Unreleased
+
+- Added a complete Simplified Chinese README with one-click language switching
+  between separate single-language pages.
+
 ## 0.2.0 — 2026-07-15
 
 - Added a native Claude Code plugin manifest and marketplace alongside Codex.

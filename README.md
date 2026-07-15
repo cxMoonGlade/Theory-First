@@ -1,5 +1,7 @@
 # Theory First
 
+English | [简体中文](README.zh-CN.md)
+
 > Close the literature. Preregister the claim. Try to falsify the result.
 
 Theory First is a cross-platform Agent Skills suite for rigorous computational

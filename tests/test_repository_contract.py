@@ -206,10 +206,16 @@ def test_plugin_and_marketplace_manifests() -> None:
 def test_release_version_is_synchronized() -> None:
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
-    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    readmes = [
+        (ROOT / name).read_text(encoding="utf-8")
+        for name in ("README.md", "README.zh-CN.md")
+    ]
     assert f'version = "{VERSION}"' in pyproject
     assert f"## {VERSION} " in changelog
-    assert f"/tree/v{VERSION}/plugins/theory-first/skills" in readme
+    assert all(
+        f"/tree/v{VERSION}/plugins/theory-first/skills" in readme
+        for readme in readmes
+    )
 
 
 def test_public_installation_surfaces_are_documented() -> None:
@@ -221,6 +227,92 @@ def test_public_installation_surfaces_are_documented() -> None:
         "Agent Skills",
     }
     assert all(item in readme for item in required)
+
+
+def test_readmes_are_separate_reciprocal_language_pages() -> None:
+    english = (ROOT / "README.md").read_text(encoding="utf-8")
+    chinese = (ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
+
+    assert [line for line in english.splitlines() if line][:2] == [
+        "# Theory First",
+        "English | [简体中文](README.zh-CN.md)",
+    ]
+    assert [line for line in chinese.splitlines() if line][:2] == [
+        "# Theory First",
+        "[English](README.md) | 简体中文",
+    ]
+    assert english.count("(README.zh-CN.md)") == 1
+    assert chinese.count("(README.md)") == 1
+    assert "## Workflow" in english
+    assert "## 工作流程" in chinese
+    assert "## 工作流程" not in english
+    assert "## Workflow" not in chinese
+
+    han = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff]")
+    assert not han.search(english.replace("简体中文", "", 1))
+
+    chinese_prose = re.sub(r"```.*?```", "", chinese, flags=re.DOTALL)
+    chinese_prose = re.sub(r"`[^`\n]*`", "", chinese_prose)
+    chinese_prose = re.sub(r"\]\([^)]+\)", "]", chinese_prose)
+    long_english_blocks = [
+        block
+        for raw_block in re.split(r"\n\s*\n", chinese_prose)
+        if (
+            block := re.sub(r"\s+", " ", raw_block).strip()
+        )
+        and len(re.sub(r"\W+", "", block)) >= 40
+        and not han.search(block)
+    ]
+    assert long_english_blocks == []
+
+    english_heading_levels = re.findall(r"^(#{2,3}) ", english, re.MULTILINE)
+    chinese_heading_levels = re.findall(r"^(#{2,3}) ", chinese, re.MULTILINE)
+    assert english_heading_levels == chinese_heading_levels
+
+    english_bash = re.findall(r"```bash\n(.*?)\n```", english, re.DOTALL)
+    chinese_bash = re.findall(r"```bash\n(.*?)\n```", chinese, re.DOTALL)
+    assert english_bash == chinese_bash
+
+    required_commands = {
+        "npx skills add cxMoonGlade/Theory-First --skill '*' --agent opencode --global --yes",
+        "npx skills add cxMoonGlade/Theory-First --skill '*' --agent claude-code --agent opencode --agent codex --global --yes",
+        f"npx skills@1.5.17 add https://github.com/cxMoonGlade/Theory-First/tree/v{VERSION}/plugins/theory-first/skills --skill '*' --agent opencode --global --copy --yes",
+        "codex plugin marketplace add cxMoonGlade/Theory-First",
+        "codex plugin add theory-first@theory-first",
+        "claude plugin marketplace add cxMoonGlade/Theory-First",
+        "claude plugin install theory-first@theory-first",
+    }
+    for document in (english, chinese):
+        assert all(command in document for command in required_commands)
+
+    markdown_link = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+    language_pages = {"README.md", "README.zh-CN.md"}
+    english_targets = sorted(
+        target
+        for target in markdown_link.findall(english)
+        if target not in language_pages
+    )
+    chinese_targets = sorted(
+        target
+        for target in markdown_link.findall(chinese)
+        if target not in language_pages
+    )
+    assert english_targets == chinese_targets
+
+    identifiers = {
+        "CODE_PERMITTED",
+        "CODE_BLOCKED",
+        "SUITE_INCOMPLETE",
+        "search-exhausted-gap",
+        "ACCEPT_WITH_CLASS",
+        "REPAIR",
+        "STOP",
+        "REOPEN_EVIDENCE",
+        "v0.2.0",
+        "plugins/theory-first/skills/",
+    }
+    assert all(identifier in english for identifier in identifiers)
+    assert all(identifier in chinese for identifier in identifiers)
 
 
 def test_project_profile_uses_declarative_safe_argv() -> None:

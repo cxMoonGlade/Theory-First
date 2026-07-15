@@ -23,6 +23,11 @@ retrieval system, or compute environment.
    change touches skills or platform manifests.
 6. Review the diff for private artifacts and third-party content.
 
+When changing public README content, update both `README.md` and
+`README.zh-CN.md`. Keep them as separate single-language pages, and preserve
+commands, paths, status identifiers, versions, and link targets across the
+translation.
+
 ## Core design constraints
 
 - Preserve the boundary between source claims, project inference, and new

@@ -4,7 +4,8 @@ This is a public, domain-neutral, cross-platform Agent Skills suite for computat
 
 ## Source of truth
 
-- `README.md` defines the product boundary and public workflow.
+- `README.md` defines the canonical English product boundary and public
+  workflow; `README.zh-CN.md` is its complete Simplified Chinese translation.
 - `plugins/theory-first/skills/` is the single runtime source for every host.
 - `plugins/theory-first/.codex-plugin/plugin.json` and
   `plugins/theory-first/.claude-plugin/plugin.json` are thin host adapters.
@@ -26,6 +27,9 @@ This is a public, domain-neutral, cross-platform Agent Skills suite for computat
 - Preserve the complete seven-skill install unit. Dependency-bearing skills
   must fail with `SUITE_INCOMPLETE` when a named child is unavailable; never
   disguise a partial install as a completed scientific workflow.
+- Keep the two README pages as separate single-language documents with
+  reciprocal language links. Preserve commands, paths, status identifiers,
+  versions, and link targets exactly across translations.
 
 ## Validate
 
