@@ -4,7 +4,7 @@ This record separates release-specific packaging evidence. It is evidence about
 skill and host contracts, not proof that scientific conclusions produced with
 the suite are correct.
 
-## v0.2.0 cross-platform release candidate
+## v0.2.0 cross-platform release
 
 ### Open standard and repository contracts
 
@@ -34,15 +34,33 @@ These checks establish packaging, discovery, and resource integrity. They do
 not establish identical model behavior across hosts, models, permission
 policies, or tool configurations.
 
-### Release-time checks still pending at this snapshot
+### Published-source checks
 
-- Repeat Codex, Claude Code, and Agent Skills/OpenCode installation from the
-  pushed GitHub source rather than this local checkout.
-- Run the final GitHub Actions matrix on the publication commit and create the
-  `v0.2.0` tag only after it passes.
-- Prompt-level Claude Code and OpenCode behavior was not exercised with a model
-  provider in this environment; the shared routing corpus remains the minimum
-  behavioral contract.
+- GitHub `main` at packaging commit
+  `ee7772920341fad398a7f465b086e2a2ac7657ba` passed the complete CI run:
+  Python 3.10, 3.11, and 3.12 repository gates plus the isolated
+  `skills@1.5.17` full-suite installation job.
+- A fresh isolated Codex marketplace checkout of that commit installed and
+  enabled plugin version `0.2.0`; its cache contained all seven skills.
+- A fresh isolated Claude Code marketplace checkout of that commit installed
+  and enabled plugin version `0.2.0`; `plugin details` reported seven skills
+  and zero agents, hooks, MCP servers, or LSP servers.
+- A fresh isolated Agent Skills installation from GitHub found exactly seven
+  suite skills. OpenCode `1.18.2` discovered all seven, including both entry
+  points, and both installed status models matched the canonical bytes.
+- The repository description and topics now identify the cross-platform
+  surface, and GitHub private vulnerability reporting remains enabled.
+
+The release tag is cut from the validation-bearing commit only after its own CI
+run passes.
+
+### Remaining behavioral limit
+
+Prompt-level Claude Code and OpenCode behavior was not exercised with a model
+provider in this environment. Packaging, installation, discovery, and resource
+integrity are verified; identical model behavior across hosts, models,
+permission policies, and tool configurations is not claimed. The shared routing
+corpus remains the minimum behavioral contract.
 
 ## v0.1.0 published baseline
 
