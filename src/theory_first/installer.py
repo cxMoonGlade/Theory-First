@@ -400,7 +400,12 @@ def _perform_install(
                         manifest=source_manifests[skill_name],
                     )
                 )
-                os.replace(staged_path, final_path)
+                # `os.replace` may overwrite a path created after our final
+                # conflict check on Windows. `os.rename` refuses that existing
+                # destination there; on POSIX, a staged directory cannot replace
+                # a concurrently created regular file. This preserves the
+                # external writer used by the commit-race regression test.
+                os.rename(staged_path, final_path)
     except BaseException as error:
         rollback_errors: list[str] = []
         for prepared in reversed(prepared_installs):

@@ -256,7 +256,7 @@ def test_second_target_failure_rolls_back_every_target(
     second = tmp_path / "second-skills"
     first_marker = _seed_stale_skill(first, "first")
     second_marker = _seed_stale_skill(second, "second")
-    real_replace = os.replace
+    real_rename = os.rename
 
     def fail_second_target_install(
         source: str | os.PathLike[str], destination: str | os.PathLike[str]
@@ -268,9 +268,9 @@ def test_second_target_failure_rolls_back_every_target(
             and source_path.parent.name.startswith(".theory-first-stage-")
         ):
             raise OSError("injected second-target failure")
-        real_replace(source, destination)
+        real_rename(source, destination)
 
-    monkeypatch.setattr(installer_module.os, "replace", fail_second_target_install)
+    monkeypatch.setattr(installer_module.os, "rename", fail_second_target_install)
 
     with pytest.raises(OSError, match="injected second-target failure"):
         install_suites((first, second), force=True)
@@ -300,7 +300,7 @@ def test_keyboard_interrupt_after_backup_restores_the_old_skill(
 ) -> None:
     target = tmp_path / "skills"
     marker = _seed_stale_skill(target, "old")
-    real_replace = os.replace
+    real_rename = os.rename
 
     def interrupt_install(
         source: str | os.PathLike[str], destination: str | os.PathLike[str]
@@ -312,9 +312,9 @@ def test_keyboard_interrupt_after_backup_restores_the_old_skill(
             and source_path.parent.name.startswith(".theory-first-stage-")
         ):
             raise KeyboardInterrupt
-        real_replace(source, destination)
+        real_rename(source, destination)
 
-    monkeypatch.setattr(installer_module.os, "replace", interrupt_install)
+    monkeypatch.setattr(installer_module.os, "rename", interrupt_install)
 
     with pytest.raises(KeyboardInterrupt):
         install_suite(target, force=True)
@@ -333,6 +333,7 @@ def test_interrupt_immediately_after_a_successful_rename_restores_the_old_skill(
     target = tmp_path / "skills"
     marker = _seed_stale_skill(target, "precious")
     real_replace = os.replace
+    real_rename = os.rename
 
     def interrupt_after_success(
         source: str | os.PathLike[str], destination: str | os.PathLike[str]
@@ -347,14 +348,16 @@ def test_interrupt_immediately_after_a_successful_rename_restores_the_old_skill(
             destination_path == target / "theory-first"
             and source_path.parent.name.startswith(".theory-first-stage-")
         )
+        operation = real_rename if is_install else real_replace
         if (interrupt_phase == "backup" and is_backup) or (
             interrupt_phase == "install" and is_install
         ):
-            real_replace(source, destination)
+            operation(source, destination)
             raise KeyboardInterrupt
-        real_replace(source, destination)
+        operation(source, destination)
 
     monkeypatch.setattr(installer_module.os, "replace", interrupt_after_success)
+    monkeypatch.setattr(installer_module.os, "rename", interrupt_after_success)
 
     with pytest.raises(KeyboardInterrupt):
         install_suite(target, force=True)
@@ -427,9 +430,10 @@ def test_incomplete_rollback_preserves_backup_and_recovery_message(
     target = tmp_path / "skills"
     _seed_stale_skill(target, "precious")
     real_replace = os.replace
+    real_rename = os.rename
     real_unlink = Path.unlink
 
-    def fail_install_and_restore(
+    def fail_install(
         source: str | os.PathLike[str], destination: str | os.PathLike[str]
     ) -> None:
         source_path = Path(source)
@@ -439,6 +443,13 @@ def test_incomplete_rollback_preserves_backup_and_recovery_message(
             and source_path.parent.name.startswith(".theory-first-stage-")
         ):
             raise OSError("injected install failure")
+        real_rename(source, destination)
+
+    def fail_restore(
+        source: str | os.PathLike[str], destination: str | os.PathLike[str]
+    ) -> None:
+        source_path = Path(source)
+        destination_path = Path(destination)
         if (
             source_path.parent.name.startswith(".theory-first-backup-")
             and destination_path == target / "theory-first"
@@ -451,7 +462,8 @@ def test_incomplete_rollback_preserves_backup_and_recovery_message(
             raise PermissionError("injected lock cleanup failure")
         real_unlink(self, *args, **kwargs)
 
-    monkeypatch.setattr(installer_module.os, "replace", fail_install_and_restore)
+    monkeypatch.setattr(installer_module.os, "rename", fail_install)
+    monkeypatch.setattr(installer_module.os, "replace", fail_restore)
     monkeypatch.setattr(Path, "unlink", fail_lock_cleanup)
 
     with pytest.raises(InstallError, match="rollback was incomplete") as caught:
@@ -472,10 +484,10 @@ def test_commit_time_race_does_not_overwrite_the_new_path(
 ) -> None:
     target = tmp_path / "skills"
     raced_path = target / EXPECTED_SKILLS[0]
-    real_replace = os.replace
+    real_rename = os.rename
     injected = False
 
-    def race_before_replace(
+    def race_before_rename(
         source: str | os.PathLike[str], destination: str | os.PathLike[str]
     ) -> None:
         nonlocal injected
@@ -488,13 +500,14 @@ def test_commit_time_race_does_not_overwrite_the_new_path(
         ):
             injected = True
             raced_path.write_text("concurrent writer", encoding="utf-8")
-        real_replace(source, destination)
+        real_rename(source, destination)
 
-    monkeypatch.setattr(installer_module.os, "replace", race_before_replace)
+    monkeypatch.setattr(installer_module.os, "rename", race_before_rename)
 
     with pytest.raises(OSError):
         install_suite(target)
 
+    assert injected
     assert raced_path.read_text(encoding="utf-8") == "concurrent writer"
     assert {path.name for path in target.iterdir()} == {EXPECTED_SKILLS[0]}
     assert not tuple(tmp_path.glob(".theory-first-*"))
@@ -505,7 +518,7 @@ def test_rollback_preserves_a_committed_skill_modified_by_an_external_writer(
 ) -> None:
     target = tmp_path / "skills"
     first_skill, second_skill = EXPECTED_SKILLS[:2]
-    real_replace = os.replace
+    real_rename = os.rename
 
     def modify_first_then_fail_second(
         source: str | os.PathLike[str], destination: str | os.PathLike[str]
@@ -516,17 +529,17 @@ def test_rollback_preserves_a_committed_skill_modified_by_an_external_writer(
             ".theory-first-stage-"
         )
         if is_staged_install and destination_path == target / first_skill:
-            real_replace(source, destination)
+            real_rename(source, destination)
             (destination_path / "external-writer.txt").write_text(
                 "do not delete", encoding="utf-8"
             )
             return
         if is_staged_install and destination_path == target / second_skill:
             raise OSError("injected failure after external write")
-        real_replace(source, destination)
+        real_rename(source, destination)
 
     monkeypatch.setattr(
-        installer_module.os, "replace", modify_first_then_fail_second
+        installer_module.os, "rename", modify_first_then_fail_second
     )
 
     with pytest.raises(InstallError, match="rollback was incomplete") as caught:
